@@ -189,7 +189,7 @@ class Sam2Segmentation:
                 "bboxes": ("BBOX", ),
                 "individual_objects": ("BOOLEAN", {"default": False}),
                 "mask": ("MASK", ),
-                
+                "enabled": ("BOOLEAN", {"default": True, "label_on": "enabled", "label_off": "disabled"}),
             },
         }
     
@@ -199,7 +199,11 @@ class Sam2Segmentation:
     CATEGORY = "SAM2"
 
     def segment(self, image, sam2_model, keep_model_loaded, coordinates_positive=None, coordinates_negative=None, 
-                individual_objects=False, bboxes=None, mask=None):
+                individual_objects=False, bboxes=None, mask=None, enabled=True):
+        if not enabled:
+            mask_tensor = torch.zeros(image.shape[1:-1]).unsqueeze(0)
+            return (mask_tensor,)
+        
         offload_device = mm.unet_offload_device()
         model = sam2_model["model"]
         device = sam2_model["device"]
